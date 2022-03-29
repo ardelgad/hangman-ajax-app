@@ -2,3 +2,23 @@
 2. Com es diu el nom del paràmetre de la QueryString que determina el número de paraules que ha de tenir la película a endevinar?
 3. Quantes películes recuperem en total de la API?
 4. En quin format recuperem les pelicules de la API?
+
++ Llevar registro visual y de estado de las letras probadas.
+  + nueva variable estado: checkedLetters = []
+  + Cada vez que recibo una letra
+      + Si esta letra ya se está en checkedLetter
+         + No está: la añadimos
+      + Vaciar el innerHTML de id="letters-tried"
+      + Hay que poner todas las teclas de checkedLetters , en id="letters-tried" poner
+        tantos <span> como letras en checkedLetters
+
++ Gestionar el número de intentos
+    + nueva variable de estado: attempts = 5
+    + Buscar un sitio adecuado en el DOM para mostrar el número de intentos
+    + Cada vez que recibo una letra
+         + Si esta letra ya está en checkedLetters O NO está en la película a adivinar
+            + attempts--
+            + Actualizar el DOM
+            + comprobar si el jugador ya ha perdido (attempts == 0)
+                 + Mensaje de derrota
+                 + Impedir que el usuario siga pulsando teclas
