@@ -4,12 +4,7 @@
 // https://raw.githubusercontent.com/hjorturlarsen/IMDB-top-100/master/data/movies.json
 // Juan Pablo: OJO Cuidao, hay películas con ":", "accentos", números
 
-// Alternativa: encuentrame todo lo que NO sea un espacio en blanco, y cámbialo por un *
-//let movieGuess = movie.replaceAll(/[^\s]/g, "*");
-STATE.reset("the shining");
-
-// Recorremos el string. nextLetter vale a cada iteración una letra del string
-DOM.updateGuessedWord(STATE.movieGuess);
+reset();
 
 // El FOR anterior es equivalente a:
 // for (let i = 0; i < movieGuess.length; i++) {
@@ -29,12 +24,14 @@ DOM.updateGuessedWord(STATE.movieGuess);
  * 
  */
 
-document.addEventListener("keyup", function (e) {
+document.addEventListener("keyup", async function (e) {
 
+    // si has perdido O has ganado...no gestiones el evento
     if (STATE.attempts == 0 || STATE.movieGuess == STATE.movie) {
-        return;        
+        return;
     }
 
+    // Escribir de la a a la z
     let keyPressed = e.key.toLowerCase();
     if (!/^[a-z]$/i.test(keyPressed)) {
         // esto no es una letra de la a la z
@@ -42,44 +39,73 @@ document.addEventListener("keyup", function (e) {
         return;
     }
 
+
+    // Te devuelve un true si la letra forma parte del string de la pelícila
     let isCorrect = STATE.movie.includes(keyPressed);
+
+    // Si ya has pulsado la tecla devuelve true
     let hasAlreadyBeenPressed = STATE.checkedLetters.includes(keyPressed);
 
+    // Si te has equivocado de letra o ya la habías pulsado, 
     if (!isCorrect || hasAlreadyBeenPressed) {
+
+        // decrementar el número de intentos
         STATE.attempts--;
         DOM.updateAttempts(STATE.attempts);
 
-        if (STATE.attempts==0) {
+        // Gestionamos la derrota
+        if (STATE.attempts == 0) {
             // hemos perdido
             DOM.showLooserMessage();
             const audio = new Audio('../sounds/lost.wav');
             audio.play();
+            return;
         }
     }
 
-
+    // Si no habías pulsado la tecla anteriormente, incluirla en la lista de teclas pulsadas 
     if (!hasAlreadyBeenPressed) {
-        // Es correcta la letra pulsada?
+
+
         STATE.checkedLetters.push(keyPressed);
         DOM.addGuessedLetter(keyPressed, isCorrect);
+
+
     }
 
+    // Actualizamos la variable de estado de película adivinada substituyendo los '*' por la letra que hemos pulsado
     for (let i = 0; i < STATE.movie.length; i++) {
 
-        // i = 1
         if (STATE.movie[i] == keyPressed) {
             STATE.movieGuess = STATE.movieGuess.slice(0, i) + keyPressed + STATE.movieGuess.slice(i + 1);
         }
+
     }
 
-    //Hemos ganado?
+    // Hemos ganado?
+    console.log(STATE.movie, STATE.movieGuess);
+
     if (STATE.movie == STATE.movieGuess) {
         const audio = new Audio('../sounds/win.wav');
         audio.play();
         DOM.showWinnerMessage();
+        const imageMovie = await REQUEST.getImageFromMovie(STATE.movie);
+        DOM.displayMovieImage(imageMovie);
+
     }
-    
+
+    // Encarga de actualizar la interfaz de la palabra adivinada hasta el momento m*trix rel*aded
     DOM.updateGuessedWord(STATE.movieGuess);
 })
 
+document.querySelector("#reset").addEventListener("click", reset);
 
+function reset() {
+    // Invocamos la función getMovieFromJson
+    REQUEST.getMovieFromJson((movie) => {
+        STATE.reset(movie);
+        console.log(movie);
+        DOM.updateGuessedWord(STATE.movieGuess);
+        DOM.resetUX();
+    });
+}
